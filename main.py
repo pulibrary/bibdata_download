@@ -53,7 +53,7 @@ def download_file(url: str, directory_path: str) -> str:
 
 
 def download_bd_files(
-    set_url: str, directory_path: str, start: int = 1, limit: int | None = None
+    set_url: str, directory_path: str, start: int = 1, batch_size: int | None = None
 ) -> list[str]:
     if directory_path.startswith("/"):
         makedirs(directory_path, exist_ok=True)
@@ -63,7 +63,9 @@ def download_bd_files(
     index = get(set_url).json()
     file_urls = [d["dump_file"] for d in index["files"]["bib_records"]]
     files = []
-    for index, file_url in enumerate(file_urls[start - 1 : start + limit - 1], start=1):
+    idx_start = start - 1
+    idx_end = start + batch_size - 1  # TODO - this will fail with IndexOutOfRange on the last page
+    for index, file_url in enumerate(file_urls[idx_start:idx_end], start=start):
         logger.info(f"Downloading file {index}/{len(file_urls)}")
         files.append(download_file(file_url, directory_path))
     return files
@@ -96,6 +98,6 @@ if __name__ == "__main__":
     report_url = "https://bibdata.princeton.edu/dumps/12645.json"
     out_dir = "/tmp/full_dump"
     # Twenty at a time
-    files = download_bd_files(report_url, out_dir, start=1, limit=20)
+    files = download_bd_files(report_url, out_dir, start=1, batch_size=20)
     [untar(file) for file in files]
     tidy_names(out_dir)
