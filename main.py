@@ -61,7 +61,7 @@ def download_bd_files(
         directory_path = join(getcwd(), directory_path)
         makedirs(directory_path)
     index = get(set_url).json()
-    file_urls = [d["dump_file"] for d in index["files"]["bib_records"]]
+    file_urls = sorted([d["dump_file"] for d in index["files"]["bib_records"]])
     files = []
     idx_start = start - 1
     idx_end = start + batch_size - 1  # TODO - this will fail with IndexOutOfRange on the last page
